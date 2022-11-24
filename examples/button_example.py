@@ -2,8 +2,6 @@ import pygame
 from button import Button
 
 pygame.init()
-
-pygame.init()
 clock = pygame.time.Clock()
 running = True
 screen = pygame.display.set_mode((640, 480))
