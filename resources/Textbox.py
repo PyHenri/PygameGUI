@@ -1,9 +1,10 @@
 import pygame
+import unicodedata
 
 
 class textbox:
 
-    def __init__(self, screen, x, y, minwidth, maxwidth, height, font, default_color, active_color, textcolor, border=2, initial=""):
+    def __init__(self, screen, x, y, minwidth, maxwidth, height, font, default_color, active_color, textcolor, border=2, initial="", cursor_blink_interval=400):
         self.screen = screen
         self.x = x
         self.y = y
@@ -19,6 +20,11 @@ class textbox:
         self.active = False
         self.left = initial  # string on the left of the cursor
         self.right = ""  # string on the right of the cursor
+
+        self._clock = pygame.time.Clock()
+        self._cursor_blink_interval = cursor_blink_interval
+        self._cursor_visible = False
+        self._last_blink_toggle = 0
 
     def draw(self):
 
@@ -38,9 +44,22 @@ class textbox:
             offset = rendered_surface.get_width() - self.maxwidth
         else:
             offset = 0
-        print(offset)
 
         box.blit(rendered_surface, (0 - offset, (self.height - rendered_surface.get_height())/2))
+        # cursor
+
+        if self.active:
+            self._clock.tick()
+            self._last_blink_toggle += self._clock.get_time()
+            if self._last_blink_toggle > self._cursor_blink_interval:
+                self._last_blink_toggle %= self._cursor_blink_interval
+                self._cursor_visible = not self._cursor_visible
+
+            if self._cursor_visible:
+                str_left_of_cursor = self.value[:self.cursor_pos]
+                cursor_x = self.font.size(str_left_of_cursor)[0]
+                pygame.draw.rect(box, self.textcolor, (cursor_x - offset, rendered_surface.get_height()/2, 4, rendered_surface.get_height()))
+
         self.screen.blit(box, (self.x, self.y))
 
     def update(self, mouse, click, events):
@@ -50,7 +69,7 @@ class textbox:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)  # change cursor
             if click[0] and self.active == False:
                 self.active = True
-                pygame.key.set_repeat(200, 25)  # makes keyinput slower
+                pygame.key.set_repeat(200, 80)  # makes keyinput slower
         else:
 
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # change cursor
@@ -68,7 +87,13 @@ class textbox:
                         getattr(self, attrname)()
 
                     else:
-                        self._process_other(e)
+                        if e.unicode != "" and unicodedata.category(e.unicode)[0] != "C":  # dont allow unicode controll chars
+                            self._process_other(e)
+
+                    # Make cursor visible when something is pressed
+
+                    self._last_blink_toggle = 0
+                    self._cursor_visible = True
 
         self.draw()
 
