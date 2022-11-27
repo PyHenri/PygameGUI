@@ -1,5 +1,6 @@
 import pygame
 import unicodedata
+import pyperclip
 
 
 class textbox:
@@ -45,7 +46,7 @@ class textbox:
         else:
             offset = 0
 
-        box.blit(rendered_surface, (0 - offset, (self.height - rendered_surface.get_height())/2))
+        box.blit(rendered_surface, (self.border - offset, (self.height - rendered_surface.get_height())/2))
         # cursor
 
         if self.active:
@@ -58,7 +59,7 @@ class textbox:
             if self._cursor_visible:
                 str_left_of_cursor = self.value[:self.cursor_pos]
                 cursor_x = self.font.size(str_left_of_cursor)[0]
-                pygame.draw.rect(box, self.textcolor, (cursor_x - offset, rendered_surface.get_height()/2, 4, rendered_surface.get_height()))
+                pygame.draw.rect(box, self.textcolor, (cursor_x + self.border - offset, rendered_surface.get_height()/2, 3, rendered_surface.get_height()))
 
         self.screen.blit(box, (self.x, self.y))
 
@@ -69,7 +70,7 @@ class textbox:
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)  # change cursor
             if click[0] and self.active == False:
                 self.active = True
-                pygame.key.set_repeat(200, 80)  # makes keyinput slower
+                pygame.key.set_repeat(200, 90)  # makes keyinput slower
         else:
 
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # change cursor
@@ -85,6 +86,9 @@ class textbox:
                     attrname = f"_process_{pygame.key.name(e.key)}"
                     if hasattr(self, attrname):
                         getattr(self, attrname)()
+
+                    if e.key == pygame.K_v and pygame.key.get_mods() & pygame.KMOD_CTRL:
+                        self._paste()
 
                     else:
                         if e.unicode != "" and unicodedata.category(e.unicode)[0] != "C":  # dont allow unicode controll chars
@@ -118,6 +122,10 @@ class textbox:
     def _process_other(self, e):
         self.left += e.unicode
 
+    def _paste(self):
+        for l in pyperclip.paste():
+            self.left += l
+
     @property
     def value(self):
         return self.left + self.right
@@ -129,6 +137,8 @@ class textbox:
 
     @cursor_pos.setter
     def cursor_pos(self, value):
+        if value < 0:
+            value = 0
         complete = self.value
         self.left = complete[:value]
         self.right = complete[value:]
