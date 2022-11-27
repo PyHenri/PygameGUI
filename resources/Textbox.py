@@ -71,6 +71,18 @@ class textbox:
             if click[0] and self.active == False:
                 self.active = True
                 pygame.key.set_repeat(200, 90)  # makes keyinput slower
+            elif click[0]:
+                position_list = [0]
+                for idx, letter in enumerate(self.value):
+                    rendered_letters = self.font.render(self.value[:idx] + letter, True, (0, 0, 0))
+                    position_list.append(rendered_letters.get_width())
+
+
+                # get letter that is closest to mouse[0]
+                if position_list != []:
+                    takeClosest = lambda num, collection: min(collection, key=lambda x: abs(x-num))
+                    self.cursor_pos = position_list.index(takeClosest(mouse[0] - self.x, position_list))
+
         else:
 
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # change cursor
