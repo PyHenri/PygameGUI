@@ -6,6 +6,7 @@ import pyperclip  # access to copied data
 class textbox:
 
     def __init__(self, screen, x, y, minwidth, maxwidth, height, font, default_color, active_color, textcolor, border=2, initial="", cursor_blink_interval=400):
+        self.width = 0
         self.screen = screen
         self.x = x
         self.y = y
@@ -33,17 +34,17 @@ class textbox:
         rendered_surface = self.font.render(self.value + " ", True, self.textcolor)
 
         # create the box width
-        width = max(self.minwidth, rendered_surface.get_width())
-        if width > self.maxwidth:
-            width = self.maxwidth
+        self.width = max(self.minwidth, rendered_surface.get_width())
+        if self.width > self.maxwidth:
+            self.width = self.maxwidth
 
         # create the box surface, a surface is required, so that all the text that doesn't fit, dont get on the main screen
-        box = pygame.Surface((width, self.height), pygame.SRCALPHA).convert_alpha()
+        box = pygame.Surface((self.width, self.height), pygame.SRCALPHA).convert_alpha()
 
         if not self.active:
-            pygame.draw.rect(box, self.default_color, (0, 0, width, self.height), self.border)
+            pygame.draw.rect(box, self.default_color, (0, 0, self.width, self.height), self.border)
         else:
-            pygame.draw.rect(box, self.active_color, (0, 0, width, self.height), self.border)
+            pygame.draw.rect(box, self.active_color, (0, 0, self.width, self.height), self.border)
 
         # calculating an offset to let the text that doesnt fit on the surface disappear to the left
         if rendered_surface.get_width() > self.maxwidth:
@@ -70,7 +71,7 @@ class textbox:
 
     def update(self, mouse, click, events):
         # enable/disable all actions
-        if self.x < mouse[0] < self.x + self.minwidth and self.y < mouse[1] < self.y + self.height:  # if mouse is on box
+        if self.x < mouse[0] < self.x + self.width and self.y < mouse[1] < self.y + self.height:  # if mouse is on box
 
             pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)  # change cursor to this text thingie i dunno man
             if click[0] and self.active == False:
@@ -84,10 +85,20 @@ class textbox:
                     rendered_letters = self.font.render(self.value[:idx] + letter, True, (0, 0, 0))
                     position_list.append(rendered_letters.get_width())
 
+                # calculating an offset to let the text that doesnt fit on the surface disappear to the left
+                if len(self.value) > 0:
+                    if rendered_letters.get_width() > self.maxwidth:
+                        offset = rendered_letters.get_width() - self.maxwidth
+                    else:
+                        offset = 0
+                else:
+                    offset = 0
+
                 # get letter that is closest to mouse[0]
                 if position_list:
-                    takeClosest = lambda num, collection: min(collection, key=lambda x: abs(x-num))
+                    takeClosest = lambda num, collection: min(collection, key=lambda x: abs(x-offset-num))
                     self.cursor_pos = position_list.index(takeClosest(mouse[0] - self.x, position_list))
+                    print(takeClosest(mouse[0] - self.x, position_list))
 
         else:
 
