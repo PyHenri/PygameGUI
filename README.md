@@ -1,7 +1,7 @@
 <h3 align="center">Pygame GUI</h3>
 
 <a name="readme-top"></a>
-[![Contributors][contributors-shield]][contributors-url]
+[![Contributors]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
