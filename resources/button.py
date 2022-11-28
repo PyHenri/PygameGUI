@@ -1,3 +1,4 @@
+# import modules
 import pygame
 from math import sqrt
 
@@ -50,23 +51,30 @@ class Button:
             self.height = self.image_up.get_rect().height
 
         self.active = False
-        self.active_color = active_color
+        self.active_color = active_color  # color switches to this color if self.active
         self.active_border_color = active_border_color
         self.clicked = False
         self.clicked_color = clicked_color
         self.action_mouse_button = action_mouse_button
-        self.advanced_calculations = advanced_calculations
+        self.advanced_calculations = advanced_calculations  # enables calculations for the button corners
 
     def update(self, mouse, click):
+        # if button should calculate the corners
         if self.radius > 0 and self.advanced_calculations:
+            # create variables which turn to true if the mouse cursor is touching them
+            # the following statements are self explaining
             topRect = self.x + self.radius <= mouse[0] <= self.x + self.width - self.radius and self.y <= mouse[1] <= self.y + self.radius
             midRect = self.x <= mouse[0] <= self.x + self.width and self.y + self.radius <= mouse[1] <= self.y + self.height - self.radius
             bottomRect = self.x + self.radius <= mouse[0] <= self.x + self.width - self.radius and self.y + self.height - self.radius <= mouse[1] <= self.y + self.height
+
+            # calculate the distance of the mouse cursor from side pointing inside the button of a circle with the given radius
+            # and set the corners to true if the distance if smaller than the radius
             midTopleft = distance((self.x + self.radius, self.y + self.radius), (mouse[0], mouse[1])) <= self.radius
             midBottomleft = distance((self.x + self.radius, self.y + self.height - self.radius), (mouse[0], mouse[1])) <= self.radius
             midTopright = distance((self.x + self.width - self.radius, self.y + self.radius), (mouse[0], mouse[1])) <= self.radius
             midBottomRight = distance((self.x + self.width - self.radius, self.y + self.height - self.radius), (mouse[0], mouse[1])) <= self.radius
-
+            
+            # if cursor is touching one of those areas self.active is turned to true
             if topRect or midRect or bottomRect or midTopright or midTopleft or midBottomleft or midBottomRight:
                 self.active = True
                 if click[self.action_mouse_button]:
@@ -77,7 +85,7 @@ class Button:
                 self.active = False
 
         else:
-
+            # if the button schould not calculate the corners, the detection might not be pixel perfect
             if self.x < mouse[0] < self.x + self.width and self.y < mouse[1] < self.y + self.height:  # if mouse is on button
                 self.active = True
                 if click[self.action_mouse_button]:
