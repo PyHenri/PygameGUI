@@ -7,7 +7,7 @@ this project is a collection of objects I developed to enhance your pygame exper
 - [x] Buttons
 - [x] Textinput
 - [x] Sliders
-- [ ] Multiline Textboxes
+- [x] Multiline Textboxes
 - [ ] Checkboxes
 - [ ] Scrollbars
 - [ ] Dropdown Menus
