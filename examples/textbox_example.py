@@ -1,5 +1,5 @@
 import pygame
-from Textbox import textbox
+from Textinput import textbox
 
 pygame.init()
 clock = pygame.time.Clock()
