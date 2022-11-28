@@ -1,6 +1,6 @@
 import pygame
 import unicodedata
-import pyperclip
+import pyperclip  # access to copied data
 
 
 class textbox:
@@ -9,8 +9,8 @@ class textbox:
         self.screen = screen
         self.x = x
         self.y = y
-        self.minwidth = minwidth
-        self.maxwidth = maxwidth
+        self.minwidth = minwidth  # start width of box
+        self.maxwidth = maxwidth  # if text no longer fits inside the box it expands until it reaches this width
         self.height = height
         self.border = border
         self.font = font
@@ -22,18 +22,22 @@ class textbox:
         self.left = initial  # string on the left of the cursor
         self.right = ""  # string on the right of the cursor
 
+        # vars required for the cursor
         self._clock = pygame.time.Clock()
         self._cursor_blink_interval = cursor_blink_interval
         self._cursor_visible = False
         self._last_blink_toggle = 0
 
     def draw(self):
-
+        # prerender surface and adjust variables using the rendered surface
         rendered_surface = self.font.render(self.value + " ", True, self.textcolor)
+
+        # create the box width
         width = max(self.minwidth, rendered_surface.get_width())
         if width > self.maxwidth:
             width = self.maxwidth
 
+        # create the box surface, a surface is required, so that all the text that doesn't fit, dont get on the main screen
         box = pygame.Surface((width, self.height), pygame.SRCALPHA).convert_alpha()
 
         if not self.active:
@@ -41,14 +45,15 @@ class textbox:
         else:
             pygame.draw.rect(box, self.active_color, (0, 0, width, self.height), self.border)
 
+        # calculating an offset to let the text that doesnt fit on the surface disappear to the left
         if rendered_surface.get_width() > self.maxwidth:
             offset = rendered_surface.get_width() - self.maxwidth
         else:
             offset = 0
 
         box.blit(rendered_surface, (self.border - offset, (self.height - rendered_surface.get_height())/2))
-        # cursor
 
+        # rendering the cursor and calculating the blink intervall
         if self.active:
             self._clock.tick()
             self._last_blink_toggle += self._clock.get_time()
@@ -67,25 +72,26 @@ class textbox:
         # enable/disable all actions
         if self.x < mouse[0] < self.x + self.minwidth and self.y < mouse[1] < self.y + self.height:  # if mouse is on box
 
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)  # change cursor
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_IBEAM)  # change cursor to this text thingie i dunno man
             if click[0] and self.active == False:
                 self.active = True
-                pygame.key.set_repeat(200, 90)  # makes keyinput slower
+                pygame.key.set_repeat(200, 90)  # makes keyinput slower so that if you enter "a" it doesnt display "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+
+            # every time the box is clicked, find the position the user clicked, find the closest letter and set the cursor there
             elif click[0]:
                 position_list = [0]
                 for idx, letter in enumerate(self.value):
                     rendered_letters = self.font.render(self.value[:idx] + letter, True, (0, 0, 0))
                     position_list.append(rendered_letters.get_width())
 
-
                 # get letter that is closest to mouse[0]
-                if position_list != []:
+                if position_list:
                     takeClosest = lambda num, collection: min(collection, key=lambda x: abs(x-num))
                     self.cursor_pos = position_list.index(takeClosest(mouse[0] - self.x, position_list))
 
         else:
 
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # change cursor
+            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)  # change cursor to default pointer thingie
             if click[0] and self.active == True:
                 self.active = False
                 pygame.key.set_repeat(0, 0)  # sets keyinput to default
@@ -103,14 +109,12 @@ class textbox:
                         self._paste()
 
                     else:
-                        if e.unicode != "" and unicodedata.category(e.unicode)[0] != "C":  # dont allow unicode controll chars
+                        if e.unicode != "" and unicodedata.category(e.unicode)[0] != "C":  # dont allow unicode controll chars in the value
                             self._process_other(e)
 
                     # Make cursor visible when something is pressed
-
                     self._last_blink_toggle = 0
                     self._cursor_visible = True
-
         self.draw()
 
     def _process_delete(self):
