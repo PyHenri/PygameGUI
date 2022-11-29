@@ -7,7 +7,7 @@ def splitkeep(s, delimiter):
 
 class Text:
 
-    def __init__(self, screen, x, y, text_, width="auto", height="auto", color=(0, 0, 0), font=None, lineSpacing=0, border=2, border_color=(0 , 0 ,0)):
+    def __init__(self, screen, x, y, text_, width="auto", height="auto", color=(0, 0, 0), font=None, lineSpacing=0, border=2, border_color=(0, 0, 0), align="left"):
         self.max_width = None
         self.screen = screen
         self.x = x
@@ -18,6 +18,7 @@ class Text:
         self.color = color
         self.border = border
         self.border_color = border_color
+        self.align = align
 
         if type(font) != pygame.font.Font and font is not None:  # font variable must be pygame.font.Font type
             raise TypeError
@@ -63,7 +64,13 @@ class Text:
         for idx, line in enumerate(self.text_):
             l = self.font.render(line, True, self.color)
             y = (idx * l.get_height()) + (self.lineSpacing * idx) + self.y + self.border
-            x = self.x + self.border
+
+            if self.align == "left":
+                x = self.x + self.border
+            elif self.align == "right":
+                x = self.x + self.max_width - l.get_width() + self.border
+            if self.align == "center":
+                x = self.x + self.border + (self.max_width - l.get_width())//2
             self.screen.blit(l, (x, y))
 
         if self.height == "auto":
