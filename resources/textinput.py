@@ -155,6 +155,16 @@ class textbox:
     @property
     def value(self):
         return self.left + self.right
+    
+    @value.setter
+    def value(self, value):
+        cursor_pos = self.cursor_pos
+        if len(value) > 0:
+            self.left = value[:cursor_pos]
+            self.right = value[cursor_pos:]
+        else:
+            self.left = ""
+            self.right = ""
 
     @property
     def cursor_pos(self):
@@ -168,3 +178,4 @@ class textbox:
         complete = self.value
         self.left = complete[:value]
         self.right = complete[value:]
+        
