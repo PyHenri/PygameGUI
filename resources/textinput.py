@@ -98,7 +98,6 @@ class textbox:
                 if position_list:
                     takeClosest = lambda num, collection: min(collection, key=lambda x: abs(x-offset-num))
                     self.cursor_pos = position_list.index(takeClosest(mouse[0] - self.x, position_list))
-                    print(takeClosest(mouse[0] - self.x, position_list))
 
         else:
 
